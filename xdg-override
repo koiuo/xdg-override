@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+set -o errexit
+set -o nounset
+set -o pipefail
+
+XDG_OVERRIDE_PATH="/tmp/xdg-override-$USER"
+
+usage()
+{
+cat << _USAGE
+xdg-override [options...] <app>
+  -h, --help
+      Show command synopsis.
+  -m <regex> <command>, --match <regex> <command>
+      Override handling of specific mimetype
+
+Examples
+
+  xdg-override -m "^https?://.*\.youtube.com/" mpv -m "^https?://" firefox thunderbird
+
+Launches thunderbird and
+- forces all youtube.com URLs to open in mpv
+- forces all other URLs to opened in firefox
+
+_USAGE
+}
+
+# xdg-open
+
+function xdg_open {
+    local match_spec
+    # drop leading pipe
+    if [[ "${XDG_OVERRIDE_MATCH:0:1}" == "|" ]]; then
+        match_spec="${XDG_OVERRIDE_MATCH:1}"
+    else
+        match_spec="${XDG_OVERRIDE_MATCH}"
+    fi
+
+    IFS='|' read -ra matches <<< "$match_spec"
+    IFS=' '
+
+    if (( ${#matches[@]} % 2 != 0 )); then
+        echo "error: invalid XDG_OVERRIDE_MATCH value: $XDG_OVERRIDE_MATCH"
+        exit 1
+    fi
+
+    # Iterate over the array in pairs
+    for ((i=0; i<${#matches[@]}-1; i+=2)); do
+        pattern=${matches[i]}
+        command=${matches[i+1]}
+        if [[ "$1" =~ $pattern ]]; then
+            $command "$1" &
+            exit 0
+        fi
+    done
+
+    $XDG_OVERRIDE_DELEGATE "$1"
+}
+
+# xdg-override
+
+function xdg_override {
+    local match=""
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -m|--match)
+                match="|$2|$3"
+                shift
+                shift
+                shift
+                ;;
+            -h|--help)
+                usage
+                exit 0
+                ;;
+            --)
+                shift
+                break
+                ;;
+            -*)
+                echo "Unknown option $1"
+                help
+                exit 1
+                ;;
+            *)
+                break
+                ;;
+        esac
+    done
+
+    mkdir -p "$XDG_OVERRIDE_PATH"
+    cp "$(readlink -f -- "$0")" "$XDG_OVERRIDE_PATH/xdg-open"
+
+    cmd=$1
+    shift
+
+    XDG_OVERRIDE_DELEGATE="$(which xdg-open)"
+    XDG_OVERRIDE_MATCH="$match"
+    PATH="$XDG_OVERRIDE_PATH:$PATH"
+    export XDG_OVERRIDE_DELEGATE
+    export XDG_OVERRIDE_MATCH
+    export PATH
+    "$cmd" "$@"
+}
+
+# main
+
+case "$0" in
+    */xdg-open|xdg-open)
+        xdg_open "$@"
+        ;;
+    *)
+        xdg_override "$@"
+        ;;
+esac
