@@ -38,10 +38,22 @@
         fi
       '';
     in rec {
-      /*
-      Generate an overlay with patched xdg-utils package
+      /* Generate an overlay with patched xdg-utils package.
 
-      WARNING: on a typical desktop a lot depends on xdg-utils. Overlaying xdg-utils will cause massive rebuilds
+        # Inputs
+
+        `nameMatch` a list of pairs
+          { case = "<regex>"; command = "<command>" }
+
+        Example:
+          (overlay {
+            nameMatch = [
+              { case = "^https?://"; command = "firefox" }
+            ]
+          })
+
+        WARNING: on a typical desktop many derivations depend on xdg-utils. Adding this overlay will cause massive
+        rebuilds
       */
       overlay = { nameMatch } : final : prev : {
         xdg-utils =
@@ -59,8 +71,26 @@
           };
       };
 
-      /*
-      Generate proxy xdg-open package
+      /* Generate a proxy xdg-open package.
+
+         The intended use-case is to install this package and to shadow xdg-open from xdg-utils to globally dispatch
+         certain URLs to an alternative browser.
+
+         # Inputs
+
+        `pkgs` system's nixpkgs
+
+        `nameMatch` a list of pairs
+          { case = "<regex>"; command = "<command>" }
+
+        Example:
+          home.packages = [
+            (xdg-override.lib.proxyPkg { inherit pkgs; nameMatch = [
+              { case = "^https?://.*\.youtube.com/"; command = "mpv"; }
+            ];})
+          ]
+
+        The example will open all *.youtube.com URLs in `mpv` instead of the default browser.
       */
       proxyPkg = { pkgs, nameMatch } : let
         text = proxyText { inherit nameMatch; delegate = "${pkgs.xdg-utils}/bin/xdg-open"; };
@@ -72,8 +102,25 @@
         '';
       };
 
-      /*
-      Wrap a single package injecting xdg-open proxy into its PATH
+      /* Wrap a single package and inject custom xdg-open proxy into its `PATH``
+
+         # Inputs
+
+        `nameMatch` a list of pairs
+          { case = "<regex>"; command = "<command>" }
+
+        `pkg` a package to wrap
+
+        Example:
+          home.packages = [
+            (xdg-override.lib.wrapPacakge {
+              nameMatch = [
+                { case = "^https?://"; command = "firefox"; }
+              ];
+            } pkgs.slack)
+          ]
+
+        This will install a wrapped slack package, which will open all links in Firefox instead of the default browser.
       */
       wrapPackage = { nameMatch }: pkg: let
         system = pkg.system;
