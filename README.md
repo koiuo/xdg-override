@@ -105,4 +105,4 @@ The script is more than sufficient for my needs and I don't plan to add new feat
 
 That said, don't hesitate to open an issue if you miss something or have a cool idea.
 
-[blog]: https://127001.me/change-browser-in-slack
+[blog]: https://127001.me/change-browser-in-slack/
