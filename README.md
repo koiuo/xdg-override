@@ -2,6 +2,8 @@
 
 Override `xdg-open` behavior. Because the way it already works is not confusing enough.
 
+> [How do you change browser in Slack anyway?][blog]
+
 ## What is `xdg-open` and what `xdg-override` does?
 
 `xdg-open` is a GNU/Linux application that "opens" files and URLs in user's preferred application:
@@ -29,7 +31,7 @@ For example, if our default browser is Firefox, and we want Chromium to be our d
 
 Two words: `PATH` manipulation.
 
-You can read the explanation of how `xdg-override` works and about my motivation in my blog post [How do you change browser in Slack anyway?](https://127001.me/change-browser-in-slack)
+You can read the explanation of how `xdg-override` works and about my motivation in my blog post [How do you change browser in Slack anyway?][blog]
 
 ## Installation and running
 
@@ -103,3 +105,4 @@ The script is more than sufficient for my needs and I don't plan to add new feat
 
 That said, don't hesitate to open an issue if you miss something or have a cool idea.
 
+[blog]: https://127001.me/change-browser-in-slack
