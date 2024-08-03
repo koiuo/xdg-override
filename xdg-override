@@ -5,8 +5,7 @@ set -o pipefail
 
 XDG_OVERRIDE_PATH="/tmp/xdg-override-$USER"
 
-usage()
-{
+usage() {
 cat << _USAGE
 xdg-override [options...] <app>
   -h, --help
@@ -16,11 +15,13 @@ xdg-override [options...] <app>
 
 Examples
 
-  xdg-override -m "^https?://.*\.youtube.com/" mpv -m "^https?://" firefox thunderbird
+  xdg-override -m "^https?://.*\.youtube.com/" mpv \
+               -m "^https?://" firefox \
+               thunderbird
 
 Launches thunderbird and
-- forces all youtube.com URLs to open in mpv
-- forces all other URLs to opened in firefox
+- forces all *.youtube.com URLs to open in mpv
+- forces all other URLs to open in firefox
 
 _USAGE
 }
@@ -29,14 +30,14 @@ _USAGE
 
 function xdg_open {
     local match_spec
-    # drop leading pipe
-    if [[ "${XDG_OVERRIDE_MATCH:0:1}" == "|" ]]; then
+    # drop leading separator
+    if [[ "${XDG_OVERRIDE_MATCH:0:1}" == $'\x1f' ]]; then
         match_spec="${XDG_OVERRIDE_MATCH:1}"
     else
         match_spec="${XDG_OVERRIDE_MATCH}"
     fi
 
-    IFS='|' read -ra matches <<< "$match_spec"
+    IFS=$'\x1f' read -ra matches <<< "$match_spec"
     IFS=' '
 
     if (( ${#matches[@]} % 2 != 0 )); then
@@ -65,7 +66,7 @@ function xdg_override {
     while [[ $# -gt 0 ]]; do
         case "$1" in
             -m|--match)
-                match="|$2|$3"
+                match=$(printf "%s\x1f%s\x1f%s" "$match" "$2" "$3")
                 shift
                 shift
                 shift

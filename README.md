@@ -55,11 +55,13 @@ xdg-override [options...] <app>
 
 Examples
 
-  xdg-override -m "^https?://.*\.youtube.com/" mpv -m "^https?://" firefox thunderbird
+  xdg-override -m "^https?://.*\.youtube.com/" mpv \
+               -m "^https?://" firefox \
+               thunderbird
 
 Launches thunderbird and
-- forces all youtube.com URLs to open in mpv
-- forces all other URLs to opened in firefox
+- forces all *.youtube.com URLs to open in mpv
+- forces all other URLs to open in firefox
 ```
 
 On top of the script, the flake offers a few library functions to be used in NixOS or home-manager config
