@@ -22,7 +22,7 @@ Most application on GNU/Linux by convention delegate to `xdg-open` when they nee
 
 However, there are situations when this consistent behavior is not desired: for example, if we need to override default browser just for one application and only temporarily. This is where `xdg-override` helps: it replaces `xdg-open` with itself to alter the behavior without changing system settings.
 
-For example, if our default browser is Firefox, and we want Chromium to be our default browser in Slack messanger, we can launch Slack like this:
+For example, if our default browser is Firefox, and we want Chromium to be our default browser in Slack messenger, we can launch Slack like this:
 ```
 ~ ❯ xdg-override --match "^https?://" chromium slack
 ```
